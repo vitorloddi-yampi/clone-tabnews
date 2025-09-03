@@ -3,12 +3,13 @@ import { join } from "node:path";
 import database from "infra/database";
 
 export default async function migrations(request, response) {
-  const isPostMethod = request.method === "POST",
-    isGetMethod = request.method === "GET";
+  const allowedMethods = ["GET", "POST"];
+  const isPostMethod = request.method === "POST";
 
-  if (!isPostMethod && !isGetMethod) {
+  if (!allowedMethods.includes(request.method)) {
     return response.status(405).json({
       error: `Method "${request.method}" not allowed`,
+      message: "Only GET and POST methods are allowed for migrations.",
     });
   }
 
@@ -36,7 +37,7 @@ export default async function migrations(request, response) {
 
     return response.status(responseStatus).json(migrations);
   } catch (error) {
-    console.error(error);
+    console.error("Migration error:", error);
     throw error;
   } finally {
     await dbClient.end();
